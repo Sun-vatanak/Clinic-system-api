@@ -1,28 +1,34 @@
 <?php
-
-namespace Database\Seeders;
-
+use App\Models\Role;
 use App\Models\User;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    /**
-     * Seed the application's database.
-     */
-    public function run(): void
+    public function run()
     {
-       User::create([
-        'name' => 'Admin User',
-        'email' => 'admin@example.com',
-        'phone' => '0123456789',
-        'role' => 'admin',
-        'password' => bcrypt('admin123'),
-    ]);
+        // Create roles
+        Role::insert([
+            ['id' => 1, 'name' => 'Admin'],
+            ['id' => 2, 'name' => 'Doctor'],
+            ['id' => 3, 'name' => 'Staff'],
+            ['id' => 4, 'name' => 'Patient']
+        ]);
 
-    // Create multiple users using the factory
-    \App\Models\User::factory()->count(6)->create();
+        // Create test user with profile
+        $user = User::create([
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+            'role_id' => 1,
+            'is_active' => 1
+        ]);
 
+        $user->profile()->create([
+            'first_name' => 'Test',
+
+            'last_name' => 'User',
+            'phone' => '1234567890',
+            'gender_id' => 1
+        ]);
     }
 }
