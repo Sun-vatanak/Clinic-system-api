@@ -22,4 +22,9 @@ class UserProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
+    // In your User or Profile model
+public function getPhotoUrlAttribute()
+{
+    return $this->photo ? url('/user-photos/'.$this->photo) : url('/default.png');
+}
 }

@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
@@ -38,6 +40,21 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Update profile
     Route::put('/profile', [ProfileController::class, 'updateProfile']);
+// routes/web.php
+Route::get('/user-photos/{filename}', function ($filename) {
+    $path = storage_path('app/public/user-photos/' . $filename);
 
+    if (!File::exists($path)) {
+        abort(404);
+    }
+
+    $file = File::get($path);
+    $type = File::mimeType($path);
+
+    $response = Response::make($file, 200);
+    $response->header("Content-Type", $type);
+
+    return $response;
+});
     // ... your other resource routes (appointments, medical-records, etc.)
 });

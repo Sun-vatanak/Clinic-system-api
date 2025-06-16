@@ -93,10 +93,8 @@ class UserController extends Controller
                 'errors' => $validator->errors()
             ], 422);
         }
-
-        // Handle file upload
         $photoPath = null;
-        if ($request->hasFile('photo')) {
+        if ($request->hasFile(key: 'photo')) {
             $photoPath = $request->file('photo')->store('user-photos', 'public');
         }
 
