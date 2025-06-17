@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\ProfileResource;
 
 class UserResource extends JsonResource
 {
@@ -15,7 +16,8 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'is_active'=> intval($this->is_active),
             'telegram_id' => $this->telegram_id,
-            // 'profile'=> new ProfileResource($this->profile),
+
+            'profile'=> new ProfileResource($this->profile),
             'role' =>$this->role_id ? [
                 'id' => intval($this->role_id),
                 'name' => $this->role->name ?? null
