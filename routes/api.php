@@ -1,13 +1,12 @@
 <?php
 
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Response;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\MedicineController;
 
 Route::post('login', [AuthController::class, 'login']);
 Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
@@ -40,21 +39,25 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Update profile
     Route::put('/profile', [ProfileController::class, 'updateProfile']);
-// routes/web.php
-Route::get('/user-photos/{filename}', function ($filename) {
-    $path = storage_path('app/public/user-photos/' . $filename);
 
-    if (!File::exists($path)) {
-        abort(404);
-    }
-
-    $file = File::get($path);
-    $type = File::mimeType($path);
-
-    $response = Response::make($file, 200);
-    $response->header("Content-Type", $type);
-
-    return $response;
-});
     // ... your other resource routes (appointments, medical-records, etc.)
+    Route::prefix('categories')->group(function () {
+        Route::get('/', [CategoryController::class, 'index']);
+        Route::post('/', [CategoryController::class, 'store']);
+        Route::get('/{id}', [CategoryController::class, 'show']);
+        Route::put('/{id}', [CategoryController::class, 'update']);
+        Route::delete('/{id}', [CategoryController::class, 'destroy']);
+        Route::get('/{id}/medicines', [CategoryController::class, 'medicines']);
+    });
+
+    // Medicine Routes
+    Route::prefix('medicines')->group(function () {
+        Route::get('/', [MedicineController::class, 'index']);
+        Route::post('/', [MedicineController::class, 'store']);
+        Route::get('/{id}', [MedicineController::class, 'show']);
+        Route::put('/{id}', [MedicineController::class, 'update']);
+        Route::delete('/{id}', [MedicineController::class, 'destroy']);
+        Route::get('/category/{categoryId}', [MedicineController::class, 'byCategory']);
+        Route::get('/search/{term}', [MedicineController::class, 'search']);
+    });
 });
