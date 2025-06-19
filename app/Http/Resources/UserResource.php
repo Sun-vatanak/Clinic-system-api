@@ -14,7 +14,7 @@ class UserResource extends JsonResource
         return [
             'id' => intval($this->id),
             'email' => $this->email,
-            'is_active'=> intval($this->is_active),
+            'is_active'=> intval(value: $this->is_active),
             'telegram_id' => $this->telegram_id,
 
             'profile'=> new ProfileResource($this->profile),

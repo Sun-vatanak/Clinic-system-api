@@ -16,59 +16,83 @@ use Illuminate\Validation\Rule;
 class UserController extends Controller
 {
     // Get paginated list of users
-    public function index(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'search' => 'nullable|string|max:255',
-            'role_id' => 'nullable|integer|exists:roles,id',
-            'status' => 'nullable|in:active,inactive',
-            'sort_by' => 'nullable|in:id,email,created_at',
-            'sort_dir' => 'nullable|in:asc,desc',
-            'per_page' => 'nullable|integer|min:1|max:100',
-        ]);
+public function index(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'search' => 'nullable|string|max:255',
+        'role_id' => 'nullable|integer|exists:roles,id',
+        'status' => 'nullable|in:active,inactive',
+        'sort_by' => 'nullable|in:id,email,created_at',
+        'sort_dir' => 'nullable|in:asc,desc',
+        'per_page' => 'nullable|integer|min:1|max:100',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'result' => false,
-                'message' => 'Validation error',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        $query = User::with(['profile', 'role'])
-            ->when($request->search, function ($q, $search) {
-                $q->where(function ($query) use ($search) {
-                    $query->where('email', 'like', "%$search%")
-                        ->orWhereHas('profile', function ($q) use ($search) {
-                            $q->where('first_name', 'like', "%$search%")
-                                ->orWhere('last_name', 'like', "%$search%")
-                                ->orWhere('phone', 'like', "%$search%");
-                        });
-                });
-            })
-            ->when($request->role_id, fn ($q, $roleId) => $q->where('role_id', $roleId))
-            ->when($request->status, function ($q, $status) {
-                $q->where('is_active', $status === 'active' ? 1 : 0);
-            });
-
-        $sortBy = $request->sort_by ?? 'created_at';
-        $sortDir = $request->sort_dir ?? 'desc';
-        $perPage = $request->per_page ?? 15;
-
-        $users = $query->orderBy($sortBy, $sortDir)->paginate($perPage);
-
+    if ($validator->fails()) {
         return response()->json([
-            'result' => true,
-            'message' => 'Users retrieved successfully',
-            'data' => UserResource::collection($users),
-            'meta' => [
-                'current_page' => $users->currentPage(),
-                'last_page' => $users->lastPage(),
-                'per_page' => $users->perPage(),
-                'total' => $users->total(),
-            ]
-        ]);
+            'result' => false,
+            'message' => 'Validation error',
+            'errors' => $validator->errors()
+        ], 422);
     }
+
+    $query = User::with(['profile', 'role'])
+        ->when($request->search, function ($q, $search) {
+            $q->where(function ($query) use ($search) {
+                $query->where('email', 'like', "%$search%")
+                    ->orWhereHas('profile', function ($q) use ($search) {
+                        $q->where('first_name', 'like', "%$search%")
+                            ->orWhere('last_name', 'like', "%$search%")
+                            ->orWhere('phone', 'like', "%$search%");
+                    });
+            });
+        })
+        ->when($request->role_id, fn ($q, $roleId) => $q->where('role_id', $roleId))
+        ->when($request->status, function ($q, $status) {
+            $q->where('is_active', $status === 'active' ? 1 : 0);
+        });
+
+    $sortBy = $request->sort_by ?? 'created_at';
+    $sortDir = $request->sort_dir ?? 'desc';
+    $perPage = $request->per_page ?? 6;
+
+    $totalDoctors = User::where('role_id', 2)->count();
+    $users = $query->orderBy($sortBy, $sortDir)->paginate($perPage);
+
+    // Get today's registrations grouped by gender_id
+    $todayRegistrations = User::whereDate('created_at', Carbon::today())
+        ->whereHas('profile')
+        ->with('profile')
+        ->get()
+        ->groupBy(function($user) {
+            // Group by gender_id with proper mapping
+            return match($user->profile->gender_id ?? null) {
+                0 => 'female',
+                1 => 'male',
+                default => 'unknown'
+            };
+        })
+        ->map(function ($group) {
+            return $group->count();
+        });
+
+    return response()->json([
+        'result' => true,
+        'message' => 'Users retrieved successfully',
+        'data' => UserResource::collection($users),
+        'meta' => [
+            'current_page' => $users->currentPage(),
+            'last_page' => $users->lastPage(),
+            'per_page' => $users->perPage(),
+            'total' => $users->total(),
+            'total_doctors' => $totalDoctors,
+            'male' => $todayRegistrations->get('male', 0),
+            'female' => $todayRegistrations->get('female', 0),
+            'other' => $todayRegistrations->get('other', 0),
+            'unknown' => $todayRegistrations->get('unknown', 0),
+            'registrations_total' => $todayRegistrations->sum()
+        ]
+    ]);
+}
 
     // Create a new user
     public function store(Request $request)
@@ -81,6 +105,7 @@ class UserController extends Controller
             'last_name' => 'nullable|string|max:50',
             'phone' => 'required|string|max:20|unique:user_profiles,phone',
             'gender' => 'nullable|in:male,female,other',
+            'telegram_id'=>' nullable|string',
             'address' => 'nullable|string|max:255',
             'photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'is_active' => 'nullable|boolean',
@@ -113,6 +138,7 @@ class UserController extends Controller
             'phone' => $request->phone,
             'gender' => $request->gender,
             'address' => $request->address,
+            'telegram_id'=>$request->telegram_id,
             'photo' => $photoPath,
         ]);
 
