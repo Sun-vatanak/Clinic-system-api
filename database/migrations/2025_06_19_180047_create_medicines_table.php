@@ -18,15 +18,15 @@ return new class extends Migration
             $table->decimal('price', 10, 2);
             $table->integer('stock_quantity')->default(0);
             $table->string('manufacturer')->nullable();
+            $table->string('photo')->nullable();
             $table->date('expiry_date')->nullable();
-            
+
             // Foreign key for category relationship
             $table->foreignId('category_id')->constrained('categories')->onDelete('cascade');
-            
+
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
-
     }
 
     /**

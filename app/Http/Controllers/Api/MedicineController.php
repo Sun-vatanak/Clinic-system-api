@@ -61,8 +61,13 @@ class MedicineController extends Controller
                 'manufacturer' => 'nullable|string|max:255',
                 'expiry_date' => 'required|date|after:today',
                 'category_id' => 'required|exists:categories,id',
-                'is_active' => 'boolean'
+                'is_active' => 'boolean',
             ]);
+
+            if ($request->hasFile('photo')) {
+                $path = $request->file('photo')->store('public/medicines');
+                $data['photo'] = str_replace('public/', '', $path);
+            }
 
             $medicine = Medicine::create($request->all());
             $medicine->load('category');

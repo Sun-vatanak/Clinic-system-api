@@ -17,7 +17,8 @@ class Medicine extends Model
         'manufacturer',
         'expiry_date',
         'category_id',
-        'is_active'
+        'is_active',
+        'photo'
     ];
 
     protected $casts = [
