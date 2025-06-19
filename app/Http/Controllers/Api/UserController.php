@@ -158,7 +158,7 @@ class UserController extends Controller
         }
 
         // Handle photo update
-        $photoPath = $user->profile->photo ?? null;
+        $photoPath = $user->profile?->photo ?? null;
         if ($request->hasFile('photo')) {
             // Delete old photo if exists
             if ($photoPath && Storage::disk('public')->exists($photoPath)) {
@@ -179,15 +179,18 @@ class UserController extends Controller
             'is_active' => $request->boolean('is_active', $user->is_active),
         ]);
 
-        // Update profile
-        $user->profile()->update([
-            'first_name' => $request->first_name,
-            'last_name' => $request->last_name,
-            'phone' => $request->phone,
-            'gender' => $request->gender,
-            'address' => $request->address,
-            'photo' => $photoPath,
-        ]);
+        // Update or create profile
+        $user->profile()->updateOrCreate(
+            ['user_id' => $user->id],
+            [
+                'first_name' => $request->first_name,
+                'last_name' => $request->last_name,
+                'phone' => $request->phone,
+                'gender' => $request->gender,
+                'address' => $request->address,
+                'photo' => $photoPath,
+            ]
+        );
 
         return response()->json([
             'result' => true,
@@ -199,8 +202,8 @@ class UserController extends Controller
     // Delete user
     public function destroy(User $user)
     {
-        // Delete photo if exists
-        if ($user->profile->photo && Storage::disk('public')->exists($user->profile->photo)) {
+        // Delete photo if exists and profile exists
+        if ($user->profile && $user->profile->photo && Storage::disk('public')->exists($user->profile->photo)) {
             Storage::disk('public')->delete($user->profile->photo);
         }
 

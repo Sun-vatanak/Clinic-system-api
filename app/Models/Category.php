@@ -6,11 +6,25 @@ use Illuminate\Database\Eloquent\Model;
 
 class Category extends Model
 {
-    protected $table = 'category';
     protected $fillable = [
         'name',
-        'photo',
+        'description',
+        'is_active'
     ];
 
-    public $timestamps = false;
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
+    // One-to-Many relationship: Category has many medicines
+    public function medicines()
+    {
+        return $this->hasMany(Medicine::class);
+    }
+
+    // Get only active medicines for this category
+    public function activeMedicines()
+    {
+        return $this->hasMany(Medicine::class)->where('is_active', true);
+    }
 }

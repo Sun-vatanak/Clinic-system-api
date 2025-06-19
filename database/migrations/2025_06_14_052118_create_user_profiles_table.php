@@ -11,7 +11,7 @@ return new class extends Migration {
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('first_name');
             $table->string('last_name')->nullable();
-            $table->string('phone');
+            $table->string('phone')->nullable();
             $table->string('address')->nullable();
             $table->string('photo')->default('users/no_photo.jpg');
             $table->unsignedTinyInteger('gender_id')->default(0);
