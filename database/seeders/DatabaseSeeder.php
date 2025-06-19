@@ -1,6 +1,9 @@
 <?php
+
 use App\Models\Role;
 use App\Models\User;
+use App\Models\Category;
+use App\Models\Medicine;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -25,7 +28,6 @@ class DatabaseSeeder extends Seeder
 
         $user->profile()->create([
             'first_name' => 'Test',
-
             'last_name' => 'User',
             'phone' => '1234567890',
             'gender_id' => 1

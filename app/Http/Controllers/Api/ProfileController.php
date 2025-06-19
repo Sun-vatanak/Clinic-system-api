@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -35,7 +36,6 @@ class ProfileController extends Controller
                 'success' => true,
                 'profile' => $profile
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -66,7 +66,7 @@ class ProfileController extends Controller
             if ($request->hasFile('photo')) {
                 // Delete old photo if exists
                 if ($user->profile && $user->profile->photo) {
-                    Storage::delete('public/'.$user->profile->photo);
+                    Storage::delete('public/' . $user->profile->photo);
                 }
 
                 $path = $request->file('photo')->store('profile-photos', 'public');
@@ -74,13 +74,12 @@ class ProfileController extends Controller
             }
 
             // Update or create profile
-           
+
             return response()->json([
                 'success' => true,
                 'message' => 'Profile updated successfully',
                 'profile' => $user->profile
             ]);
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
