@@ -34,13 +34,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::put('/change-password', [UserController::class, 'changePassword']);
         });
     });
-    // Get user profile
     Route::get('/profile', [ProfileController::class, 'getUserProfile']);
 
     // Update profile
     Route::put('/profile', [ProfileController::class, 'updateProfile']);
 
-    // ... your other resource routes (appointments, medical-records, etc.)
     Route::prefix('categories')->group(function () {
         Route::get('/', [CategoryController::class, 'index']);
         Route::post('/', [CategoryController::class, 'store']);

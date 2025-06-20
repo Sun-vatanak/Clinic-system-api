@@ -78,7 +78,6 @@ public function index(Request $request)
     return response()->json([
         'result' => true,
         'message' => 'Users retrieved successfully',
-        'data' => UserResource::collection($users),
         'meta' => [
             'current_page' => $users->currentPage(),
             'last_page' => $users->lastPage(),
@@ -90,11 +89,12 @@ public function index(Request $request)
             'other' => $todayRegistrations->get('other', 0),
             'unknown' => $todayRegistrations->get('unknown', 0),
             'registrations_total' => $todayRegistrations->sum()
-        ]
+           ],
+
+        'data' => UserResource::collection($users),
+
     ]);
 }
-
-    // Create a new user
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
